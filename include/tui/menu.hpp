@@ -2,9 +2,9 @@
 #include "tui/point.hpp"
 #include "tui/color.hpp"
 
-#include <vector>
 #include <string>
 #include <functional>
+#include <vector>
 
 namespace cli {
    class System;
@@ -15,39 +15,34 @@ namespace cli {
       class Option {
       public:
          typedef std::function<void()> Listener;
+
+         Option(const char* label) :
+            m_label{label},
+            m_listener(nullptr) {}
          
-         Option(const char* text) :
-            m_text{text},
-            m_selected{false} {}
-      
-         void setOnSelected(Listener&& l) {m_listener = std::move(l);}
-         bool isSelected() const {return m_selected;}
-      
-         const std::string& text() const {return m_text;}
+         const std::string& label() const {return m_label;}
+         void setOnListener(Listener&& l) {m_listener = std::move(l);}
+         void select() {if(m_listener) m_listener();}
       private:
-         friend class Menu;
-      
-         void isSelected(bool selected) {m_selected = selected;}
-         void select() const {if(m_listener) m_listener();}
+         std::string m_label;
          Listener m_listener;
-         bool m_selected;
-         std::string m_text;
       };
 
-      Menu(const Point& offset = {0, 0}, Color selector_color = kColor_Default);
+      Menu() :
+         m_index{0} {}
 
-      Option& addOption(const char* text) {
-         m_options.emplace_back(text);
+      Option& addOption(const char* label) {
+         m_options.emplace_back(label);
          return m_options.back();
       }
+      bool hasOptions() const {return !m_options.empty();}
 
       void event(const Event& ev);
-      /// Required paint
-      void draw(const System* sys) const;
+      void draw(const System* sys);
    private:
+      static constexpr inline const ushort s_default_offset = 3;
+
       int m_index;
-      Point m_offset;
-      Color m_selector_color;
       std::vector<Option> m_options;
    };
 } // namespace cli
