@@ -3,38 +3,75 @@
 #include "tui/system.hpp"
 #include <algorithm>
 
-namespace {
-   template<typename T>
-   static inline const T& clamp(const T& val, const T& min, const T& max) {
-      return (val > max) ? max :
-             (val < min) ? min : val;
-   }
-}
+namespace tui {
+   Menu::Menu(TextColor text_color, TextColor pointer_color) :
+      m_text_color{text_color},
+      m_pointer_color{pointer_color},
+      m_current_option{nullptr} {} 
 
-namespace cli {
    void Menu::event(const Event& ev) {
-      if(!hasOptions())
+      if(!hasOptions() || !m_current_option)
          return;
-
+      
       switch(ev.keycode) {
-         case kKeyCode_DownArrow: ++m_index; break;
-         case kKeyCode_UpArrow: --m_index; break;
-         case kKeyCode_Enter:
-            m_options.at(m_index).select();
+         case kDownArrow_KeyCode: {
+         // FIXME: Possible bug?
+            for(auto it = std::vector<Option>::iterator(m_current_option); ++it < m_options.end();) {
+               if(it->isEnabled()) {
+                  m_current_option->focus(false);
+                  m_current_option = &(*it);
+                  m_current_option->focus(true);
+                  break;
+               }
+            }
+         }
+            break;
+         case kUpArrow_KeyCode: {
+         // FIXME: Possible bug?
+            for(auto it = std::vector<Option>::iterator(m_current_option); --it >= m_options.begin();) {
+               if(it->isEnabled()) {
+                  m_current_option->focus(false);
+                  m_current_option = &(*it);
+                  m_current_option->focus(true);
+                  break;
+               }
+            }
+            break;
+         }
+         case kEnter_KeyCode:
+            m_current_option->select();
             break;
       }
-
-      m_index = clamp<int>(m_index, 0, m_options.size() - 1);
    }
 
    void Menu::draw(const System* sys) {
-      for(size_t i = 0; i < m_options.size(); ++i) {
-         Option& option = m_options.at(i);
-         auto xy = sys->getXY();
-         sys->moveTo(xy + Point(s_default_offset, 0));
-         sys->printf("[%c] %s\n",
-            (m_index == i ? '*' : ' '),
-            option.label().c_str());
-      }
+      findCurrentOption();
+      
+      for(const auto& option : m_options)
+         drawOption(option, sys);
    }
-} // namespace cli
+
+   void Menu::findCurrentOption() {
+      if(m_current_option)
+         return;
+
+      for(auto& option : m_options) {
+         if(option.isEnabled()) {
+            m_current_option = &option;
+            m_current_option->focus(true);
+            return;
+         }
+      }
+      m_current_option = m_options.data() + m_options.size();
+   }
+
+   void Menu::drawOption(const Option& o, const System* sys) {
+      auto xy = sys->getXY();
+      TextFormat text_format{m_text_color, (o.isEnabled() ? kDefault_TextStyle : kDim_TextStyle)};
+      sys->moveTo(xy + Point{s_default_offset, 0});
+      sys->put('[', text_format);
+      sys->put((o.isFocused() ? '*' : ' '), {m_pointer_color, kBold_TextStyle});
+      sys->put(']', text_format);
+      sys->printf(text_format, " %s\n", o.label().c_str());
+   }
+} // namespace tui
