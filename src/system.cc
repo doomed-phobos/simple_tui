@@ -20,7 +20,7 @@ namespace {
    }
 }
 
-namespace cli {
+namespace tui {
    std::shared_ptr<System> System::s_instance = nullptr;
 
    System::~System() {
@@ -35,29 +35,29 @@ namespace cli {
       return {getcurx(stdscr), getcury(stdscr)};
    }
 
-   void System::printf(Color fg_color, const char* fmt, va_list args) const {
-      attron(COLOR_PAIR(fg_color));
+   void System::printf(TextFormat tformat, const char* fmt, va_list args) const {
+      attron(COLOR_PAIR(tformat.ncurses_color()) | tformat.ncurses_style());
       
       addstr(format(fmt, args).c_str());
-      attroff(A_COLOR);
+      attroff(A_ATTRIBUTES);
    }
 
-   void System::printf(Color fg_color, const char* fmt, ...) const {
+   void System::printf(TextFormat tformat, const char* fmt, ...) const {
       va_list args;
       va_start(args, fmt);
-      this->printf(fg_color, fmt, args);
+      this->printf(tformat, fmt, args);
       va_end(args);
    }
 
    void System::printf(const char* fmt, ...) const {
       va_list args;
       va_start(args, fmt);
-      this->printf(kColor_Default, fmt, args);
+      this->printf({}, fmt, args);
       va_end(args);
    }
 
-   void System::put(char chr, Color fg_color) const {
-      addch(chr | COLOR_PAIR(fg_color));
+   void System::put(char chr, TextFormat tformat) const {
+      addch(chr | COLOR_PAIR(tformat.ncurses_color()) | tformat.ncurses_style());
    }
 
    void System::paint() const {
@@ -68,9 +68,9 @@ namespace cli {
       ::clear();
    }
 
-   void System::replace(const Point& pt, char chr, Color fg_color) const {
+   void System::replace(const Point& pt, char chr, TextFormat tformat) const {
       this->moveTo(pt);
-      this->put(chr, fg_color);
+      this->put(chr, tformat);
       this->moveTo(pt);
    }
 
@@ -100,7 +100,7 @@ namespace cli {
    }
 
    void System::InitColorPairs() {
-      for(short i = kColor_Default; i < kColor_LastColor; ++i)
+      for(short i = kDefault_TextColor; i < kLastColor_TextColor; ++i)
          init_pair(i, i, COLOR_BLACK);
    }
-} // namespace cli
+} // namespace tui
