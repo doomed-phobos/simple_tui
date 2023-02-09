@@ -1,3 +1,3 @@
 # Text-base User Interface
 
-Use `cli` namespace
+Use `tui` namespace

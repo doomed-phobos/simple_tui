@@ -1,8 +1,8 @@
 #pragma once
 #include "tui/key.hpp"
 
-namespace cli {
+namespace tui {
    struct Event {
-      KeyCode keycode = kKeyCode_KeyNil;
+      KeyCode keycode = kKeyNil_KeyCode;
    };
-} // namespace cli
+} // namespace tui
