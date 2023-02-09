@@ -1,6 +1,6 @@
 #pragma once
 
-namespace cli {
+namespace tui {
    template<typename T>
    struct PointT {
       T x, y;
@@ -16,4 +16,4 @@ namespace cli {
    };
 
    typedef PointT<int> Point;
-} // namespace cli
+} // namespace tui
