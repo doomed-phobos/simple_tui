@@ -1,11 +1,11 @@
 #pragma once
 
-namespace cli {
+namespace tui {
    enum KeyCode {
-      kKeyCode_KeyNil    = 0,
-      kKeyCode_UpArrow   = 259,
-      kKeyCode_DownArrow = 258,
-      kKeyCode_Enter     = 10,
-      kKeyCode_Backspace = 263,
+      kKeyNil_KeyCode    = 0,
+      kUpArrow_KeyCode   = 259,
+      kDownArrow_KeyCode = 258,
+      kEnter_KeyCode     = 10,
+      kBackspace_KeyCode = 263,
    };
-} // namespace cli
+} // namespace tui
