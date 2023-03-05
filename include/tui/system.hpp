@@ -1,7 +1,6 @@
 #pragma once
 #include "tui/point.hpp"
 #include "tui/text_format.hpp"
-#include "tui/event.hpp"
 #include "tui/key.hpp"
 
 #include <memory>
@@ -15,21 +14,25 @@ namespace tui {
       void moveTo(const Point& pt) const; 
       Point getXY() const;
 
-      void printf(TextFormat tformat, const char* fmt, ...) const;
+      void printf(const TextFormat& tformat, const char* fmt, ...) const;
       void printf(const char* fmt, ...) const;
-      void print(TextFormat tformat, const char* str) const {
+      void print(const TextFormat& tformat, const char* str) const {
          this->printf(tformat, "%s", str);
       }
       void print(const char* str) const {
-         this->print({}, str);
+         this->print(formats::kDefault_TextColor, str);
       }
-      void put(char chr, TextFormat tformat = {}) const;
-      void replace(const Point& pt, char chr, TextFormat tformat = {}) const;
+      void put(char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
+      void replace(const Point& pt, char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
       
-      void paint() const;
+      void forcePaint() const;
+      /*
+      FIXME:
+         Maybe ato use clrtobot or similar?
+      */
       void clear() const;
      
-      void waitEvents(Event& ev) const;
+      KeyCode waitKeyDown() const;
 
       static System* GetInstance();
       static std::shared_ptr<System> TryCreate();
@@ -37,8 +40,10 @@ namespace tui {
       static void InitColorPairs();
       static std::shared_ptr<System> s_instance;
 
-      void printf(TextFormat tformat, const char* fmt, va_list args) const;
+      void printf(const TextFormat& tformat, const char* fmt, va_list args) const;
 
       System() {}
    };
 } // namespace tui
+
+#define instance tui::System::GetInstance()
