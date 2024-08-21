@@ -7,5 +7,6 @@ namespace tui {
       kDownArrow_KeyCode = 258,
       kUpArrow_KeyCode   = 259,
       kBackspace_KeyCode = 263,
+      // ASCII CODE such as 'q' 'w'
    };
 } // namespace tui

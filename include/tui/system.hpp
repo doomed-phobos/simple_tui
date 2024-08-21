@@ -1,7 +1,5 @@
 #pragma once
 #include "tui/point.hpp"
-#include "tui/key.hpp"
-// #include "tui/text_format.hpp"
 
 #include <memory>
 #include <format>
@@ -15,20 +13,22 @@ namespace tui {
   public:
     ~System();
     
+    void clear() const;
     template<typename... Args>
-    void draw(const TextFormat& tfmt, std::format_string<Args...> fmt, Args&&... args) const {
-      draw(tfmt, std::format(fmt, std::forward<Args>(args)...));
+    void draw(unsigned pos, std::format_string<Args...> fmt, Args&&... args) const {
+      draw(pos, std::format(fmt, std::forward<Args>(args)...));
     }
     template<typename... Args>
     void draw(std::format_string<Args...> fmt, Args&&... args) const {
       draw(std::format(fmt, std::forward<Args>(args)...));
     }
-    void draw(const TextFormat& tfmt, const std::string& text) const;
+    void draw(unsigned pos, const std::string& text) const;
     void draw(const std::string& text) const;
-    void drawHLine() const;
-
+    void drawHLine(int n = -1) const;
+    void setTextFormat(const TextFormat& fmt);
     void forcePaint() const;
     void moveTo(const Point& pt) const;
+    void moveTail(const Point& offset) const;
 
     Point currentPosition() const;
     /*void moveTo(const Point& pt) const; 
@@ -37,9 +37,8 @@ namespace tui {
     void replace(const Point& pt, char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
     
     // FIXME:
-        // Maybe ato use clrtobot or similar?
-    void clear() const;*/
-    KeyCode waitKeyDown() const;
+        // Maybe ato use clrtobot or similar?*/
+    int waitKeyDown() const;
 
     static System* GetOrTryCreate();
   private:

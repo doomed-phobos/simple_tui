@@ -1,11 +1,11 @@
 #include "tui/system.hpp"
 
 #include "tui/text_format.hpp"
+#include "tui/text_position.hpp"
 
 #include <ncurses.h>
 #include <algorithm>
 #include <ranges>
-#include <vector>
 #include <string_view>
 using namespace std::literals;
 
@@ -16,10 +16,11 @@ namespace tui {
     endwin();
   }
 
-  void System::draw(const TextFormat& tformat, const std::string& text) const {
-    attron(COLOR_PAIR(tformat.color) | tformat.style);
-    
-    const auto& pos = tformat.position;
+  void System::clear() const {
+    ::clear();
+  }
+
+  void System::draw(unsigned pos, const std::string& text) const {
     if(pos == kDefault_TextPosition) {
       addstr(text.c_str());
     } else {
@@ -42,32 +43,47 @@ namespace tui {
       std::ranges::for_each(text | std::views::split('\n'),
         [&pt, &lines](auto&& x) {mvaddnstr(pt.y+lines++, pt.x, x.data(), x.size());}, [](auto&& x) {return std::string_view(x);});
     }
-    attroff(A_ATTRIBUTES);
   }
 
   void System::draw(const std::string& text) const {
-    draw({kDefault_TextColor}, text);
+    draw(kDefault_TextPosition, text);
+    
   }
 
   void System::forcePaint() const {
     refresh();
   }
 
-  void System::drawHLine() const {
-    attron(COLOR_PAIR(COLOR_RED));
-    hline(ACS_HLINE, 30);
+  void System::drawHLine(int n) const {
+    hline(ACS_HLINE, n > 0 ? n : COLS);
   }
 
   void System::moveTo(const Point& pt) const {
     move(pt.y, pt.x);
   }
 
+  void System::moveTail(const Point& offset) const {
+    move(LINES - offset.y, offset.x);
+  }
+
+  void System::setTextFormat(const TextFormat& fmt) {
+    if(fmt.color != kDefault_TextColor) {
+      if(fmt.color != kNone_TextColor) attron(COLOR_PAIR(fmt.color));
+      else attroff(A_COLOR);
+    }
+
+    if(fmt.style != TextStyle::kDefault) {
+      attroff(A_ATTRIBUTES & ~A_COLOR);
+      if(fmt.style != TextStyle::kNone) attron(fmt.style);
+    }
+  }
+
   Point System::currentPosition() const {
     return {getcurx(stdscr), getcury(stdscr)};
   }
 
-  KeyCode System::waitKeyDown() const {
-    return (KeyCode) getch();
+  int System::waitKeyDown() const {
+    return getch();
   }
   
   System* System::GetOrTryCreate() {
