@@ -1,19 +1,16 @@
 #pragma once
 
 namespace tui {
-   template<typename T>
-   struct PointT {
-      T x, y;
+   struct Point {
+      int x, y;
 
-      constexpr PointT() :
+      constexpr Point() :
          x{0}, y{0} {}
-      constexpr PointT(const T& _x, const T& _y) :
+      constexpr Point(const int& _x, const int& _y) :
          x{_x}, y{_y} {}
 
-      PointT operator+(const PointT& pt) const {
+      Point operator+(const Point& pt) const {
          return {x + pt.x, y + pt.y};
       }
    };
-
-   typedef PointT<int> Point;
 } // namespace tui

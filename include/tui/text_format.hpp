@@ -22,14 +22,27 @@ namespace tui {
     kLastColor_TextColor
   };
 
+  enum TextPosition {
+    kDefault_TextPosition = 0,
+
+    kTop_TextPosition     = 1 << 0,
+    kMiddle_TextPosition  = 1 << 1,
+    kBottom_TextPosition  = 1 << 2,
+
+    kLeft_TextPosition    = 1 << 3,
+    kCenter_TextPosition  = 1 << 4,
+    kRight_TextPosition   = 1 << 5,
+  };
+
   struct TextStyle {
     static const unsigned kBold;
     static const unsigned kDim;
   };
 
   struct TextFormat {
-    TextColor color{};
+    TextColor color = kDefault_TextColor;
     unsigned style{};
+    unsigned position = kDefault_TextPosition;
 
     TextFormat operator|(unsigned style) const {
       return {color, this->style | style};

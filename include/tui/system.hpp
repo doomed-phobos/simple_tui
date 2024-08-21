@@ -1,13 +1,12 @@
 #pragma once
-// #include "tui/point.hpp"
-// #include "tui/text_format.hpp"
+#include "tui/point.hpp"
 #include "tui/key.hpp"
+// #include "tui/text_format.hpp"
 
 #include <memory>
 #include <format>
 
 namespace tui {
-  class Menu;
   struct TextFormat;
 
   /// @brief Main class that initialize the library
@@ -26,11 +25,13 @@ namespace tui {
     }
     void draw(const TextFormat& tfmt, const std::string& text) const;
     void draw(const std::string& text) const;
-    void draw(const Menu& menu) const;
+    void drawHLine() const;
 
     void forcePaint() const;
+    void moveTo(const Point& pt) const;
+
+    Point currentPosition() const;
     /*void moveTo(const Point& pt) const; 
-    Point getXY() const;
 
     void put(char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
     void replace(const Point& pt, char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
