@@ -1,49 +1,50 @@
 #pragma once
-#include "tui/point.hpp"
-#include "tui/text_format.hpp"
+// #include "tui/point.hpp"
+// #include "tui/text_format.hpp"
 #include "tui/key.hpp"
 
 #include <memory>
-#include <cstdarg>
+#include <format>
 
 namespace tui {
-   class System {
-   public:
-      ~System();
+  class Menu;
+  struct TextFormat;
 
-      void moveTo(const Point& pt) const; 
-      Point getXY() const;
+  /// @brief Main class that initialize the library
+  /// Use TryCreate function to create a System's new unique instance
+  class System {
+  public:
+    ~System();
+    
+    template<typename... Args>
+    void draw(const TextFormat& tfmt, std::format_string<Args...> fmt, Args&&... args) const {
+      draw(tfmt, std::format(fmt, std::forward<Args>(args)...));
+    }
+    template<typename... Args>
+    void draw(std::format_string<Args...> fmt, Args&&... args) const {
+      draw(std::format(fmt, std::forward<Args>(args)...));
+    }
+    void draw(const TextFormat& tfmt, const std::string& text) const;
+    void draw(const std::string& text) const;
+    void draw(const Menu& menu) const;
 
-      void printf(const TextFormat& tformat, const char* fmt, ...) const;
-      void printf(const char* fmt, ...) const;
-      void print(const TextFormat& tformat, const char* str) const {
-         this->printf(tformat, "%s", str);
-      }
-      void print(const char* str) const {
-         this->print(formats::kDefault_TextColor, str);
-      }
-      void put(char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
-      void replace(const Point& pt, char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
-      
-      void forcePaint() const;
-      /*
-      FIXME:
-         Maybe ato use clrtobot or similar?
-      */
-      void clear() const;
-     
-      KeyCode waitKeyDown() const;
+    void forcePaint() const;
+    /*void moveTo(const Point& pt) const; 
+    Point getXY() const;
 
-      static System* GetInstance();
-      static std::shared_ptr<System> TryCreate();
-   private:
-      static void InitColorPairs();
-      static std::shared_ptr<System> s_instance;
+    void put(char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
+    void replace(const Point& pt, char chr, const TextFormat& tformat = formats::kDefault_TextColor) const;
+    
+    // FIXME:
+        // Maybe ato use clrtobot or similar?
+    void clear() const;*/
+    KeyCode waitKeyDown() const;
 
-      void printf(const TextFormat& tformat, const char* fmt, va_list args) const;
+    static System* GetOrTryCreate();
+  private:
+    static std::unique_ptr<System> s_instance; 
+    static void InitColorPairs();
 
-      System() {}
-   };
+    System() {}
+  };
 } // namespace tui
-
-#define instance tui::System::GetInstance()

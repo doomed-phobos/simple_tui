@@ -2,7 +2,7 @@
 
 #include <ncurses.h>
 
-namespace tui::formats {
-   const uint32_t kBold_TextStyle    = A_BOLD;
-   const uint32_t kDim_TextStyle     = A_DIM;
-} // namespace tui::formats
+namespace tui {
+  const unsigned TextStyle::kBold = A_BOLD;
+  const unsigned TextStyle::kDim = A_DIM;
+} // namespace tui
