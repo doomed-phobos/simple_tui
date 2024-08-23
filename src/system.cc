@@ -20,6 +20,14 @@ namespace tui {
     ::clear();
   }
 
+  void System::clearHereToEnd() const {
+    ::clrtobot();
+  }
+
+  void System::clearLine() const {
+    ::clrtoeol();
+  }
+
   void System::draw(unsigned pos, const std::string& text) const {
     if(pos == kDefault_TextPosition) {
       addstr(text.c_str());
@@ -85,15 +93,17 @@ namespace tui {
   int System::waitKeyDown() const {
     return getch();
   }
+
+  int System::width() const {return COLS;}
+  int System::height() const {return LINES;}
   
   System* System::GetOrTryCreate() {
     if(s_instance) return s_instance.get();
     
     if(!initscr()) return nullptr;
+    // newterm(NULL, stderr, stdin);
     if(keypad(stdscr, TRUE) == ERR) return nullptr;
-
     noecho();
-
     start_color();
 
     InitColorPairs();

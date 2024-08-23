@@ -14,6 +14,8 @@ namespace tui {
     ~System();
     
     void clear() const;
+    void clearLine() const;
+    void clearHereToEnd() const;
     template<typename... Args>
     void draw(unsigned pos, std::format_string<Args...> fmt, Args&&... args) const {
       draw(pos, std::format(fmt, std::forward<Args>(args)...));
@@ -38,6 +40,8 @@ namespace tui {
     
     // FIXME:
         // Maybe ato use clrtobot or similar?*/
+    int width() const;
+    int height() const;
     int waitKeyDown() const;
 
     static System* GetOrTryCreate();
