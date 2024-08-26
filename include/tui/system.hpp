@@ -14,7 +14,8 @@ namespace tui {
     ~System();
     
     void clear() const;
-    void clearLine() const;
+    void clearAt(const Point& pt) const;
+    void clearLineFromHere() const;
     void clearHereToEnd() const;
     template<typename... Args>
     void draw(unsigned pos, std::format_string<Args...> fmt, Args&&... args) const {
@@ -42,6 +43,7 @@ namespace tui {
         // Maybe ato use clrtobot or similar?*/
     int width() const;
     int height() const;
+    std::wstring waitString(std::wstring value = {}) const;
     int waitKeyDown() const;
 
     static System* GetOrTryCreate();

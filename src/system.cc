@@ -2,6 +2,7 @@
 
 #include "tui/text_format.hpp"
 #include "tui/text_position.hpp"
+#include "tui/key.hpp"
 
 #include <ncurses.h>
 #include <algorithm>
@@ -20,11 +21,15 @@ namespace tui {
     ::clear();
   }
 
+  void System::clearAt(const Point& pt) const {
+    mvdelch(pt.y, pt.x);
+  }
+
   void System::clearHereToEnd() const {
     ::clrtobot();
   }
 
-  void System::clearLine() const {
+  void System::clearLineFromHere() const {
     ::clrtoeol();
   }
 
@@ -90,6 +95,49 @@ namespace tui {
     return {getcurx(stdscr), getcury(stdscr)};
   }
 
+  std::wstring System::waitString(std::wstring value) const {
+    const auto og = currentPosition();
+    auto utf8_byte_type = [](uint8_t chr) {
+      if(chr < 0x80) return 1; // ASCII
+      else if(chr < 0xC0) return 0; // UTF8 continuation byte
+      else if(chr >= 0xF5 || (chr & 0xFE) == 0xC0) return -1; // Invalid
+      else return (((0xe5 << 24) >> ((unsigned)chr >> 4 << 1)) & 3) + 1;
+    };
+
+    // int x = value.length();
+    // auto change_cursor = [&](int dir) {
+      // x = std::clamp<int>(x+dir, 0, value.size());
+    // };
+    for(wint_t chr{}; chr != '\n';) {
+      moveTo(og);
+      clearLineFromHere();
+      addwstr(value.c_str());
+      // moveTo({og.x + x, og.y});
+
+      switch(get_wch(&chr), chr) {
+        case kBackspace_KeyCode:
+          // if(!value.empty()) change_cursor(-1), value.pop_back();
+          break;
+        case kUpArrow_KeyCode:
+        case kDownArrow_KeyCode: break;
+        case kLeftArrow_KeyCode:
+        case kRightArrow_KeyCode:
+          // change_cursor(chr == kRightArrow_KeyCode ? +1 : -1);
+          break;
+        default:
+          if(auto type = utf8_byte_type(chr); type >= 0) {
+            moveTo({og.x, og.y+1});
+            draw("{}", type);
+            value.push_back(chr);
+          }
+          break;
+      }
+    }
+    moveTo({0, og.y+1});
+
+    return value;
+  }
+
   int System::waitKeyDown() const {
     return getch();
   }
@@ -100,6 +148,7 @@ namespace tui {
   System* System::GetOrTryCreate() {
     if(s_instance) return s_instance.get();
     
+    setlocale(LC_ALL, "C.UTF-8");
     if(!initscr()) return nullptr;
     // newterm(NULL, stderr, stdin);
     if(keypad(stdscr, TRUE) == ERR) return nullptr;
